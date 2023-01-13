@@ -2,6 +2,7 @@ package com.bensler.susoui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import com.bensler.suso.Coordinate;
-import com.bensler.suso.Field;
+import com.bensler.suso.FieldImpl;
 import com.bensler.suso.Game;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -42,7 +43,7 @@ public class AppPanel extends JPanel {
     final CellConstraints cc = new CellConstraints();
 
     coordinatesByLabel = new HashMap<>();
-    game = new Game(new int[9][9]);
+    game = new Game(SampleGames.SAMPLE_1);
     add(createGamePanel(),    cc.rc(2, 2));
     add(createControlPanel(), cc.rc(2, 4));
   }
@@ -54,11 +55,12 @@ public class AppPanel extends JPanel {
       labelCreator.rowColSpecs  // rows
     ));
     final CellConstraints cc = new CellConstraints();
-    final Field field = game.getField();
+    final FieldImpl field = game.getField();
 
     game.getCoordinates().forEach(coordinate -> {
       final JLabel label = labelCreator.createLabel(
-        field.get(coordinate).map(digit -> String.valueOf(digit.getNumber())).orElse("")
+        field.getDigit(coordinate).map(digit -> String.valueOf(digit.getNumber())).orElse(""),
+        true
       );
 
       coordinatesByLabel.put(label, coordinate);
@@ -69,13 +71,14 @@ public class AppPanel extends JPanel {
 
   private JPanel createControlPanel() {
     final JPanel controlPanel = new JPanel(new FormLayout(
-      "f:p", // column
-      "f:p"  // rows
+      "f:p",            // column
+      "f:p, 5dlu, f:p"  // rows
     ));
     final CellConstraints cc = new CellConstraints();
     final JButton button = new JButton("Button");
 
     controlPanel.add(button, cc.rc(1, 1));
+    controlPanel.add(new GamePanel(), cc.rc(3, 1));
     controlPanel.setBackground(Color.BLUE);
     return controlPanel;
   }
@@ -88,6 +91,7 @@ public class AppPanel extends JPanel {
 
     private final Dimension labelPrefSize;
     private final Border labelBorder;
+    private final Font boldLabelFont;
     private final String rowColSpecs;
 
     LabelCreator() {
@@ -96,6 +100,7 @@ public class AppPanel extends JPanel {
       final int maxDimension;
       final String cellGroup;
 
+      boldLabelFont = label.getFont().deriveFont(Font.BOLD);
       labelBorder = new CompoundBorder(new LineBorder(Color.BLACK), new EmptyBorder(5, 5, 5, 5));
       label.setBorder(labelBorder);
       prefSize = label.getPreferredSize();
@@ -105,10 +110,13 @@ public class AppPanel extends JPanel {
       rowColSpecs = cellGroup + ", 8dlu, " + cellGroup + ", 8dlu, " + cellGroup;
     }
 
-    JLabel createLabel(String text) {
+    JLabel createLabel(String text, boolean bold) {
       final JLabel label = new JLabel(text);
 
       label.setHorizontalAlignment(SwingConstants.CENTER);
+      if (bold) {
+        label.setFont(boldLabelFont);
+      }
       label.setBorder(labelBorder);
       label.setPreferredSize(labelPrefSize);
       label.addMouseListener(new MouseAdapter() {
