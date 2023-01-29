@@ -11,6 +11,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -108,17 +110,46 @@ public class GamePanel extends JComponent {
     baseFont = new JLabel().getFont();
     solver = new Solver(game = pGame);
     setFontSize(15);
-    selectedCell = Optional.empty();
+    selectedCell = Optional.of(new Coordinate(4, 4));
+    setFocusable(true);
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent evt) {
-        GamePanel.this.mouseClicked(evt);
+        selectCell(evt.getPoint());
+      }
+    });
+    addKeyListener(new KeyAdapter() {
+
+      private final Map<Integer, Point> moveSelectionKeys = Map.of(
+        KeyEvent.VK_LEFT,  new Point(-1,  0),
+        KeyEvent.VK_RIGHT, new Point( 1,  0),
+        KeyEvent.VK_UP,    new Point( 0, -1),
+        KeyEvent.VK_DOWN,  new Point( 0,  1)
+      );
+
+      @Override
+      public void keyPressed(KeyEvent evt) {
+        Optional.ofNullable(moveSelectionKeys.get(evt.getKeyCode())).ifPresent(
+          moveSelectionDelta -> moveSelection(moveSelectionDelta)
+        );
+      }
+      @Override
+      public void keyTyped(KeyEvent evt) {
+        System.out.println("p " + evt.getKeyChar() + " # " + evt.getKeyCode());
       }
     });
   }
 
-  private void mouseClicked(MouseEvent evt) {
-    final Point position = evt.getPoint();
+  private void moveSelection(Point delta) {
+    selectedCell = selectedCell.map(oldSelection -> new Coordinate(
+      (oldSelection.getX() + delta.x + game.getWidth() ) % game.getWidth(),
+      (oldSelection.getY() + delta.y + game.getHeight()) % game.getHeight()
+    ));
+    System.out.println(selectedCell);
+    repaint();
+  }
+
+  private void selectCell(Point position) {
     final OptionalInt row = sizes.getRowCol(position.getY());
     final OptionalInt col = sizes.getRowCol(position.getX());
 
