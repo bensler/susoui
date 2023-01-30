@@ -17,12 +17,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.swing.JComponent;
@@ -35,6 +38,44 @@ import com.bensler.suso.Game;
 import com.bensler.suso.Solver;
 
 public class GamePanel extends JComponent {
+
+  final class KeyboardActions extends KeyAdapter {
+
+    private final Map<Integer, Point> moveSelectionKeys;
+    private final Map<Character, Digit> digits;
+
+    public KeyboardActions() {
+      moveSelectionKeys = Map.of(
+        KeyEvent.VK_LEFT,  new Point(-1,  0),
+        KeyEvent.VK_RIGHT, new Point( 1,  0),
+        KeyEvent.VK_UP,    new Point( 0, -1),
+        KeyEvent.VK_DOWN,  new Point( 0,  1)
+      );
+      digits = Arrays.stream(Digit.values()).collect(Collectors.toMap(
+        Digit::getNumberChar,
+        Function.identity()
+      ));
+    }
+
+    @Override
+    public void keyPressed(KeyEvent evt) {
+      Optional.ofNullable(moveSelectionKeys.get(evt.getKeyCode())).ifPresent(
+        moveSelectionDelta -> moveSelection(moveSelectionDelta)
+      );
+      Optional.ofNullable(digits.get(evt.getKeyChar())).ifPresent(
+        digit -> setSelectedDigit(Optional.of(digit))
+      );
+      if ((evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) || (evt.getKeyCode() == KeyEvent.VK_DELETE)) {
+        setSelectedDigit(Optional.empty());
+      }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent evt) {
+      digits.get(evt.getKeyChar());
+      System.out.println("p " + evt.getKeyChar() + " # " + (int)evt.getKeyChar() + " # " + evt.getKeyCode());
+    }
+  }
 
   class VariableSizes {
 
@@ -118,26 +159,7 @@ public class GamePanel extends JComponent {
         selectCell(evt.getPoint());
       }
     });
-    addKeyListener(new KeyAdapter() {
-
-      private final Map<Integer, Point> moveSelectionKeys = Map.of(
-        KeyEvent.VK_LEFT,  new Point(-1,  0),
-        KeyEvent.VK_RIGHT, new Point( 1,  0),
-        KeyEvent.VK_UP,    new Point( 0, -1),
-        KeyEvent.VK_DOWN,  new Point( 0,  1)
-      );
-
-      @Override
-      public void keyPressed(KeyEvent evt) {
-        Optional.ofNullable(moveSelectionKeys.get(evt.getKeyCode())).ifPresent(
-          moveSelectionDelta -> moveSelection(moveSelectionDelta)
-        );
-      }
-      @Override
-      public void keyTyped(KeyEvent evt) {
-        System.out.println("p " + evt.getKeyChar() + " # " + evt.getKeyCode());
-      }
-    });
+    addKeyListener(new KeyboardActions());
   }
 
   private void moveSelection(Point delta) {
@@ -145,7 +167,11 @@ public class GamePanel extends JComponent {
       (oldSelection.getX() + delta.x + game.getWidth() ) % game.getWidth(),
       (oldSelection.getY() + delta.y + game.getHeight()) % game.getHeight()
     ));
-    System.out.println(selectedCell);
+    repaint();
+  }
+
+  private void setSelectedDigit(Optional<Digit> digit) {
+    selectedCell.ifPresent(cell -> game.setDigit(cell, digit));
     repaint();
   }
 
@@ -179,7 +205,7 @@ public class GamePanel extends JComponent {
       sizes.rowColCenters.get(coordinate.getY())
     );
     final float halfCellSize = sizes.cellSize / 2.0f;
-    final boolean suggestMove = true;
+    final boolean suggestMove = failingConstraints.isEmpty();
     final int intCellSize = round(sizes.cellSize);
     final Font font = sizes.boldFont;
     final Optional<Digit> optionalDigit = game.getDigit(coordinate);
