@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ class KeyboardActions extends KeyAdapter {
 
   private final GamePanel parent;
   private final Map<Integer, Point> moveSelectionKeys;
+  private final Set<Integer> clearCellKeys;
   private final Map<Character, Digit> digits;
 
   KeyboardActions(GamePanel pParent) {
@@ -25,6 +27,11 @@ class KeyboardActions extends KeyAdapter {
       KeyEvent.VK_UP,    new Point( 0, -1),
       KeyEvent.VK_DOWN,  new Point( 0,  1)
     );
+    clearCellKeys = Set.of(
+      KeyEvent.VK_BACK_SPACE,
+      KeyEvent.VK_DELETE,
+      KeyEvent.VK_SPACE
+    );
     digits = Arrays.stream(Digit.values()).collect(Collectors.toMap(
       Digit::getNumberChar,
       Function.identity()
@@ -33,13 +40,15 @@ class KeyboardActions extends KeyAdapter {
 
   @Override
   public void keyPressed(KeyEvent evt) {
-    Optional.ofNullable(moveSelectionKeys.get(evt.getKeyCode())).ifPresent(
+    final int keyCode = evt.getKeyCode();
+
+    Optional.ofNullable(moveSelectionKeys.get(keyCode)).ifPresent(
       moveSelectionDelta -> parent.moveSelection(moveSelectionDelta)
     );
     Optional.ofNullable(digits.get(evt.getKeyChar())).ifPresent(
       digit -> parent.setSelectedDigit(Optional.of(digit))
     );
-    if ((evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) || (evt.getKeyCode() == KeyEvent.VK_DELETE)) {
+    if (clearCellKeys.contains(keyCode)) {
       parent.setSelectedDigit(Optional.empty());
     }
   }
