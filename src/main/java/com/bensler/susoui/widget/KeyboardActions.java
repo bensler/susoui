@@ -43,7 +43,7 @@ class KeyboardActions extends KeyAdapter {
     final int keyCode = evt.getKeyCode();
 
     Optional.ofNullable(moveSelectionKeys.get(keyCode)).ifPresent(
-      moveSelectionDelta -> parent.moveSelection(moveSelectionDelta)
+      parent::moveSelection
     );
     Optional.ofNullable(digits.get(evt.getKeyChar())).ifPresent(
       digit -> parent.setSelectedDigit(Optional.of(digit))
@@ -51,12 +51,6 @@ class KeyboardActions extends KeyAdapter {
     if (clearCellKeys.contains(keyCode)) {
       parent.setSelectedDigit(Optional.empty());
     }
-  }
-
-  @Override
-  public void keyTyped(KeyEvent evt) {
-    digits.get(evt.getKeyChar());
-    System.out.println("p " + evt.getKeyChar() + " # " + (int)evt.getKeyChar() + " # " + evt.getKeyCode());
   }
 
 }

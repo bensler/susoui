@@ -37,7 +37,6 @@ public class GamePanel extends JComponent {
   private static final Color CHARACTER_DARK_RED = new Color(255, 0, 0);
   private static final Color FRAME_BLACK = Color.BLACK;
   private static final Color SELECTION_INDICATOR_GREEN = Color.GREEN;
-  private static final Color DECKROT = new Color(255, 0, 0);
 
   final Font baseFont;
   private final Game game;
@@ -165,7 +164,7 @@ public class GamePanel extends JComponent {
       final float thirdCellSize = sizes.cellSize / 3.0f;
       final int twoThirdCellSize = round(thirdCellSize * 2.0f);
 
-      g.setColor(Color.GREEN);
+      g.setColor(SELECTION_INDICATOR_GREEN);
       g.drawRect(
         (int)round(center.getX() - thirdCellSize),
         (int)round(center.getY() - thirdCellSize),
