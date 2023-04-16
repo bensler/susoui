@@ -3,6 +3,7 @@ package com.bensler.susoui;
 import java.awt.Color;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -32,7 +33,7 @@ public class AppPanel extends JPanel {
     ));
     final CellConstraints cc = new CellConstraints();
 
-    game = new Game(SampleGames.SAMPLE_INVALID);
+    game = new Game(SampleGames.SAMPLE_VALID_2);
     add(gamePanel = new GamePanel(game),  cc.rc(2, 2));
     add(            createControlPanel(), cc.rc(2, 4));
   }
@@ -43,7 +44,10 @@ public class AppPanel extends JPanel {
       "f:p, 5dlu:g, f:p"  // rows
     ));
     final CellConstraints cc = new CellConstraints();
+    final JCheckBox cbSuggest = new JCheckBox("Suggestions");
 
+    cbSuggest.addActionListener(event -> gamePanel.setSuggestions(cbSuggest.isSelected()));
+    controlPanel.add(cbSuggest, cc.rc(1, 1));
     controlPanel.add(createViewSizePanel(), cc.rc(3, 1));
     controlPanel.setBackground(new Color(200, 200, 255));
     return controlPanel;

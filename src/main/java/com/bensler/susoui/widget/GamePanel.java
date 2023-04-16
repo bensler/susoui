@@ -44,6 +44,7 @@ public class GamePanel extends JComponent {
 
   private Optional<Coordinate> selectedCell;
   private VariableSizes sizes;
+  private boolean suggestionsOn;
 
   public GamePanel(Game pGame) {
     baseFont = new JLabel().getFont();
@@ -147,7 +148,7 @@ public class GamePanel extends JComponent {
       sizes.rowColCenters.get(coordinate.getY())
     );
     final float halfCellSize = sizes.cellSize / 2.0f;
-    final boolean suggestMove = failingConstraints.isEmpty();
+    final boolean suggestMove = suggestionsOn && failingConstraints.isEmpty();
     final int intCellSize = round(sizes.cellSize);
     final Font font = sizes.boldFont;
     final Optional<Digit> optionalDigit = game.getDigit(coordinate);
@@ -199,6 +200,11 @@ public class GamePanel extends JComponent {
         );
       }
     });
+  }
+
+  public void setSuggestions(boolean pSuggestionsOn) {
+    suggestionsOn = pSuggestionsOn;
+    repaint();
   }
 
 }
